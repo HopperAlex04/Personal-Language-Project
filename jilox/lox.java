@@ -1,6 +1,6 @@
 package jilox;
 
-public class lox 
+public class Lox 
 {
     
 }
