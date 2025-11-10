@@ -10,7 +10,7 @@ import java.util.HashMap;
 
 class Interpreter implements Expr.Visitor<Object>,
                              Stmt.Visitor<Void> {
-    
+
     final Environment globals = new Environment();
     private Environment environment = globals;
     private final Map<Expr, Integer> locals = new HashMap<>();
@@ -87,7 +87,7 @@ class Interpreter implements Expr.Visitor<Object>,
     private void checkNumberOperands(Token operator,
                                    Object left, Object right) {
         if (left instanceof Double && right instanceof Double) return;
-        
+
         throw new RuntimeError(operator, "Operands must be numbers.");
     }
 
@@ -152,6 +152,14 @@ class Interpreter implements Expr.Visitor<Object>,
     @Override
     public Void visitBlockStmt(Stmt.Block stmt) {
         executeBlock(stmt.statements, new Environment(environment));
+        return null;
+    }
+
+    @Override
+    public Void visitClassStmt(Stmt.Class stmt) {
+        environment.define(stmt.name.lexeme, null);
+        LoxClass klass = new LoxClass(stmt.name.lexeme);
+        environment.assign(stmt.name, klass);
         return null;
     }
 
@@ -224,12 +232,12 @@ class Interpreter implements Expr.Visitor<Object>,
         return value;
     }
 
-    
-    
+
+
     @Override
     public Object visitBinaryExpr(Expr.Binary expr) {
         Object left = evaluate(expr.left);
-        Object right = evaluate(expr.right); 
+        Object right = evaluate(expr.right);
 
         switch (expr.operator.type) {
             case GREATER:
@@ -250,7 +258,7 @@ class Interpreter implements Expr.Visitor<Object>,
             case PLUS:
                 if (left instanceof Double && right instanceof Double) {
                 return (double)left + (double)right;
-                } 
+                }
 
                 if (left instanceof String && right instanceof String) {
                 return (String)left + (String)right;
@@ -277,7 +285,7 @@ class Interpreter implements Expr.Visitor<Object>,
         Object callee = evaluate(expr.callee);
 
         List<Object> arguments = new ArrayList<>();
-        for (Expr argument : expr.arguments) { 
+        for (Expr argument : expr.arguments) {
             arguments.add(evaluate(argument));
         }
 

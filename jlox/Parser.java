@@ -22,7 +22,7 @@ class Parser {
             statements.add(declaration());
         }
 
-        return statements; 
+        return statements;
     }
 
     private Expr expression() {
@@ -31,6 +31,7 @@ class Parser {
 
     private Stmt declaration() {
         try {
+            if (match(CLASS)) return classDeclaration();
             if (match(FUN)) return function("function");
             if (match(VAR)) return varDeclaration();
 
@@ -39,6 +40,20 @@ class Parser {
             synchronize();
             return null;
         }
+    }
+
+    private Stmt classDeclaration() {
+        Token name = consume(IDENTIFIER, "Expect class name.");
+        consume(LEFT_BRACE, "Expect '{' before class body.");
+
+        List<Stmt.Function> methods = new ArrayList<>();
+        while (!check(RIGHT_BRACE) && !isAtEnd()) {
+            methods.add(function("method"));
+        }
+
+        consume(RIGHT_BRACE, "Expect '}' after class body.");
+
+        return new Stmt.Class(name, methods);
     }
 
     private Stmt statement() {
@@ -95,7 +110,7 @@ class Parser {
     private Stmt ifStatement() {
         consume(LEFT_PAREN, "Expect '(' after 'if'.");
         Expr condition = expression();
-        consume(RIGHT_PAREN, "Expect ')' after if condition."); 
+        consume(RIGHT_PAREN, "Expect ')' after if condition.");
 
         Stmt thenBranch = statement();
         Stmt elseBranch = null;
@@ -206,7 +221,7 @@ class Parser {
                 return new Expr.Assign(name, value);
             }
 
-            error(equals, "Invalid assignment target."); 
+            error(equals, "Invalid assignment target.");
         }
 
         return expr;
@@ -302,7 +317,7 @@ class Parser {
     private Expr call() {
         Expr expr = primary();
 
-        while (true) { 
+        while (true) {
         if (match(LEFT_PAREN)) {
             expr = finishCall(expr);
         } else {
